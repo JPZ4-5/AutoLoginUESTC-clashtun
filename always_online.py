@@ -4,6 +4,7 @@ import ctypes
 import os
 import time
 import platform
+import re
 
 from logger import logger
 from BitSrunLogin.LoginManager import LoginManager
@@ -19,12 +20,15 @@ except:
     pass
 
 def is_connect_internet(test_ip):
-    if platform.system().lower().startswith('windows'):
-        cmd = u"ping {} -n 1".format(test_ip)
-    else:
-        cmd = u"ping {} -c 1".format(test_ip)
-    status = os.system(cmd)
-    return status == 0
+    myre = re.compile(r'^(1\d{2}|2[0-4]\d|25[0-5]|[1-9]?\d)\.'
+                      r'(1\d{2}|2[0-4]\d|25[0-5]|[1-9]?\d)\.'
+                      r'(1\d{2}|2[0-4]\d|25[0-5]|[1-9]?\d)\.'
+                      r'(1\d{2}|2[0-4]\d|25[0-5]|[1-9]?\d)$')
+    try:
+        _ip = os.popen("curl -s 4.ipw.cn").readline().strip()
+        return myre.match(_ip) is not None
+    except Exception:
+        return False
 
 def always_login(user=None, test_ip=None, delay=2, max_failed=3, **kwargs):
     time_now = lambda: time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
